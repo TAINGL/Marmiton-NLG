@@ -31,3 +31,4 @@ test.csv
 tests/functional/__pycache__
 tests/unit/__pycache__
 data
+src/.env
