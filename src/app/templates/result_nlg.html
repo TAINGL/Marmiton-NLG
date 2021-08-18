@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en-US" dir="ltr">
+
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+
+    <!-- ===============================================-->
+    <!--    Document Title-->
+    <!-- ===============================================-->
+    <title>RecipeNLG</title>
+
+
+    <!-- ===============================================-->
+    <!--    Favicons-->
+    <!-- ===============================================-->
+    <link rel="apple-touch-icon" sizes="180x180" href="../static/public/assets/img/favicons/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../static/public/assets/img/favicons/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../static/public/assets/img/favicons/favicon-16x16.png">
+    <link rel="shortcut icon" type="image/x-icon" href="../static/public/assets/img/favicons/favicon.ico">
+    <link rel="manifest" href="../static/public/assets/img/favicons/manifest.json">
+    <meta name="msapplication-TileImage" content="../static/public/assets/img/favicons/mstile-150x150.png">
+    <meta name="theme-color" content="#ffffff">
+
+
+    <!-- ===============================================-->
+    <!--    Stylesheets-->
+    <!-- ===============================================-->
+    <link href="../static/public/assets/css/theme.css" rel="stylesheet" />
+
+  </head>
+
+
+  <body>
+
+    <!-- ===============================================-->
+    <!--    Main Content-->
+    <!-- ===============================================-->
+    <main class="main" id="top">
+      <nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top" data-navbar-on-scroll="data-navbar-on-scroll">
+        <div class="container"><a class="navbar-brand d-inline-flex" href="{{ url_for('app_routes.home') }}"><img class="d-inline-block" src="../static/public/assets/img/gallery/logo.svg" alt="logo" /><span class="text-1000 fs-3 fw-bold ms-2 text-gradient">RecipeNLG</span></a>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"> </span></button>
+          <div class="collapse navbar-collapse border-top border-lg-0 my-2 mt-lg-0" id="navbarSupportedContent">
+            <div class="mx-auto pt-5 pt-lg-0 d-block d-lg-none d-xl-block">
+            </div>
+            <form class="d-flex mt-4 mt-lg-0 ms-lg-auto ms-xl-0">
+              <div class="input-group-icon pe-2"><i class="fas fa-search input-box-icon text-primary"></i>
+                <input class="form-control border-0 input-box bg-100" type="search" placeholder="Rechercher une recette" aria-label="Search" />
+              </div>
+              <!--<a class="btn btn-white shadow-warning text-warning" type="submit" href="{{ url_for('app_routes.login') }}"> <i class="fas fa-user me-2"></i>Login</a>-->
+              <a class="btn btn-white shadow-warning text-warning" type="submit" href="{{ url_for('app_routes.logout') }}"> <i class="fas fa-user me-2"></i>Logout</a>
+            </form>
+          </div>
+        </div>
+      </nav>
+
+      <section class="py-5 overflow-hidden bg-primary" id="home">
+        <div class="container">
+          <div class="row flex-center">
+            <div class="col-md-7 col-lg-6 py-8 text-md-start text-center">
+              <div class="card w-xxl-75">
+                <div class="card-body">
+                  <nav>
+                    <div class="nav nav-tabs" id="nav-tab" role="tablist">
+                      <h1 class="nav-link mb-3" type="text" aria-controls="nav-profile" aria-selected="false"><img src="../static/public/assets/img/icons/titre.png" width="40" height="40" ></i> {{ title }} </h1>
+                    </div>
+                  </nav>
+                  <div class="tab-content mt-3" id="nav-tabContent">
+                    <div class="tab-pane fade show active" id="nav-home" role="tabpanel" aria-labelledby="nav-home-tab">
+                      <form class="row gx-2 gy-2 align-items-center" method="POST" action="/home">
+                        <div class="col">
+                          <div class="input-group-icon">
+                            <h5 class="mt-4 fw-bold mb-2"><img src="../static/public/assets/img/icons/ingredients.png" width="30" height="30" >{{ ingredients }}</h5>
+                            <p class="mb-md-0">{{ result_instruction }}</p>
+                          </div>
+                        </div>
+                        <div class="input-group-icon">
+                            <a class="btn btn-danger mb-1" type="submit" href="{{ url_for('app_routes.home') }}"></i>Générer une nouvelle recette</a> 
+                            <a class="btn btn-danger mb-1" type="submit" href="{{ url_for('app_routes.home') }}"></i>Sauvegarder la recette</a> 
+                            <a class="btn btn-danger mb-1" type="submit" href="{{ url_for('app_routes.home') }}"></i>Rechercher une recette similaire</a> 
+                            <button class="btn btn-danger mb-1" type="submit"><img src="../static/public/assets/img/icons/envoyer-un-mail.png" width="20" height="20"></button>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+    <!-- ===============================================-->
+    <!--    End of Main Content-->
+    <!-- ===============================================-->
+
+
+
+
+    <!-- ===============================================-->
+    <!--    JavaScripts-->
+    <!-- ===============================================-->
+    <script src="../static/public/vendors/@popperjs/popper.min.js"></script>
+    <script src="../static/public/vendors/bootstrap/bootstrap.min.js"></script>
+    <script src="../static/public/vendors/is/is.min.js"></script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=window.scroll"></script>
+    <script src="../static/public/vendors/fontawesome/all.min.js"></script>
+    <script src="../static/public/assets/js/theme.js"></script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@200;300;400;600;700;900&amp;display=swap" rel="stylesheet">
+  </body>
+
+</html>
