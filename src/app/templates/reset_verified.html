@@ -31,23 +31,30 @@
 		<div class="container-login100">
 			<div class="wrap-login100">
 				<form class="login100-form validate-form p-l-55 p-r-55 p-t-178" method="POST" action="">
+					{{ form.hidden_tag() }}
 					<span class="login100-form-title">
 						Réinitialisation du mot de passe
 					</span>
 
 					<div class="wrap-input100 validate-input m-b-16" data-validate = "Please enter password">
-						<input class="input100" type="password" name="pass" placeholder="Password" required>
+						{{ form.password(class_="input100") }}
+						{% for error in form.password.errors %}
+                		<span style="color: red;">[{{ error }}]</span>
+            			{% endfor %}
 						<span class="focus-input100"></span>
                     </div>
                     
-                    <div class="wrap-input100 validate-input m-b-16" data-validate = "Please enter password">
-						<input class="input100" type="password" name="ctrlpass" placeholder="Confirmer votre Password">
+                    <div class="wrap-input100 validate-input m-b-16" data-validate = "Please enter password">	{{ form.confirm(class_="input100") }}
+						{% for error in form.confirm.errors %}
+                		<span style="color: red;">[{{ error }}]</span>
+            			{% endfor %}
+
 						<span class="focus-input100"></span>
 					</div>
 
                     
                     <div class="container-login100-form-btn m-b-16">
-						<input class="login100-form-btn" type="submit" value="Reset Password">
+						{{ form.submit(class_="login100-form-btn") }}
 					</div>
 
 				</form>

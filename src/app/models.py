@@ -1,36 +1,61 @@
 import os
 import jwt
 from app import db, login
+from datetime import datetime
 from time import time
 from flask_sqlalchemy import SQLAlchemy
-from flask_login import UserMixin
+from flask_login import UserMixin, LoginManager
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask_login import LoginManager
 from settings import *
  
 class UserModel(UserMixin, db.Model):
+    """
+    Class that represents a user of the application
+
+    The following attributes of a user are stored in this table:
+        * email - email address of the user
+        * hashed password - hashed password (using werkzeug.security)
+        * registered_on - date & time that the user registered
+
+    REMEMBER: Never store the plaintext password in a database!
+    """
+    
     __tablename__ = 'users'
+    __table_args__ = {'extend_existing': True}
  
-    id = db.Column('user_id', db.Integer, primary_key=True)
-    email = db.Column(db.String(80), unique=True)
-    username = db.Column(db.String(100))
-    password_hash = db.Column(db.String())
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    username = db.Column(db.String(60), nullable=False)
+    email = db.Column(db.String(60), unique=True, nullable=False)
+    hashed_password = db.Column(db.String(60), nullable=False)
+    registered_on = db.Column(db.DateTime, nullable=True)
+    role = db.Column(db.String, default='user')
 
-    def __repr__(self):
-        return 'User {}'.format(self.username)
+    def __init__(self, username, email, plaintext_password, role='user'):
+        """
+        Create a new User object using the email address and hashing the
+        plaintext password using Bcrypt.
+        """
+        self.username = username
+        self.email = email
+        self.hashed_password = generate_password_hash(plaintext_password)
+        self.registered_on = datetime.now()
+        self.role = role
 
-    def set_password(self, password, commit=False):
-        self.password_hash = generate_password_hash(password)
+    def check_password(self, plaintext_password:str):
+        return check_password_hash(self.hashed_password, plaintext_password)
 
+
+    def set_password(self, plaintext_password, commit=False):
+        self.hashed_password = generate_password_hash(plaintext_password)
         if commit:
             db.session.commit()
-
-    def check_password(self, password):
-        return check_password_hash(self.password_hash, password)
 
     def get_reset_token(self, expires=500):
         return jwt.encode({'reset_password': self.username, 'exp': time() + expires},
                            key=os.getenv('SECRET_KEY'))
+
+    def __repr__(self):
+        return 'User {}'.format(self.username)
 
     @staticmethod
     def verify_reset_token(token):
@@ -43,16 +68,16 @@ class UserModel(UserMixin, db.Model):
         return UserModel.query.filter_by(username=username).first()
 
     @staticmethod
-    def create_user(username, password, email):
+    def create_user(username, plaintext_password, email):
 
-        user_exists = UserModel.query.filter_by(username=username).first()
+        user_exists = UserModel.query.filter_by(email=email).first()
         if user_exists:
             return False
 
         user = UserModel()
 
         user.username = username
-        user.password = user.set_password(password)
+        user.hashed_password = user.set_password(plaintext_password)
         user.email = email
 
         db.session.add(user)
@@ -61,24 +86,36 @@ class UserModel(UserMixin, db.Model):
         return True
 
     @staticmethod
-    def login_user(username, password):
+    def login_user(email, plaintext_password):
 
-        user = UserModel.query.filter_by(username=username).first()
+        user = UserModel.query.filter_by(email=email).first()
 
         if user:
-            if user.check_password(password):
+            if user.check_password(plaintext_password):
                 return True
-
         return False
 
     @staticmethod
     def verify_email(email):
 
         user = UserModel.query.filter_by(email=email).first()
-
         return user
- 
- 
-@login.user_loader
-def load_user(id):
-    return UserModel.query.get(int(id))
+
+    @property
+    def is_authenticated(self):
+        """Return True if the user has been successfully registered."""
+        return True
+
+    @property
+    def is_active(self):
+        """Always True, as all users are active."""
+        return True
+
+    @property
+    def is_anonymous(self):
+        """Always False, as anonymous users aren't supported."""
+        return False
+
+    def get_id(self):
+        """Return the user ID as a unicode string (`str`)."""
+        return str(self.id)

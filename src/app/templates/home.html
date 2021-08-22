@@ -59,8 +59,12 @@
           <div class="row flex-center">
             <div class="col-md-5 col-lg-6 order-0 order-md-1 mt-8 mt-md-0"><a class="img-landing-banner" href="#!"><img class="img-fluid" src="../static/public/assets/img/gallery/hero-header.png" alt="hero-header" /></a></div>
             <div class="col-md-7 col-lg-6 py-8 text-md-start text-center">
+            {% if current_user %}
               <h1 class="display-1 fs-md-5 fs-lg-6 fs-xl-8 text-light">Salut {{ current_user.username }} !</h1>
-              <h1 class="display-1 fs-md-5 fs-lg-6 fs-xl-8 text-light">Êtes-vous affamé?</h1>
+            {% else %}
+              <h1 class="display-1 fs-md-5 fs-lg-6 fs-xl-8 text-light">Salut!</h1>
+            {% endif %}
+              <h1 class="display-1 fs-md-5 fs-lg-6 fs-xl-8 text-light">Êtes-vous affamé(e)?</h1>
               <h1 class="text-800 mb-5 fs-4">En quelques clics, trouvez des recettes<br class="d-none d-xxl-block" /> qui vont vous faire rêver! ...ou pas</h1>
               <div class="card w-xxl-75">
                 <!-- <form method="POST" action="/home"> -->

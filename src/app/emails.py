@@ -1,4 +1,3 @@
-# TO DO
 from flask import render_template
 from flask_mail import Message
 from threading import Thread
@@ -8,7 +7,12 @@ import os
 from settings import *
 import logging.config
 
-logging.config.fileConfig('../src/app/logging.cfg', disable_existing_loggers=False)
+
+from os import path
+log_file_path = path.join(path.dirname(path.abspath(__file__)), 'logging.cfg')
+logging.config.fileConfig(log_file_path, disable_existing_loggers=False)
+#logging.config.fileConfig('logging.cfg', disable_existing_loggers=False)
+
 logger = logging.getLogger(__name__)
 
 def send_email(user):
@@ -23,13 +27,12 @@ def send_email(user):
 
     mail.send(msg)
 
-# https://overiq.com/flask-101/application-structure-and-blueprint-in-flask/
 def async_send_mail(app, msg):
     with app.app_context():
         mail.send(msg)
 
 def send_mail_thrd(subject, recipient, template, **kwargs):
-    msg = Message(subject, sender=app.config['MAIL_DEFAULT_SENDER'], recipients=[recipient])
+    msg = Message(subject, sender=os.getenv('MAIL_DEFAULT_SENDER'), recipients=[recipient])
     msg.html = render_template(template, **kwargs)
     thrd = Thread(target=async_send_mail, args=[app, msg])
     thrd.start()

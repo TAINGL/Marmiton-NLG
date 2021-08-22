@@ -37,11 +37,14 @@ class BaseConfig:
 class DevelopementConfig(BaseConfig):
     DEBUG = True
     SQLALCHEMY_DATABASE_URI = os.getenv('DEVELOPMENT_DATABASE_URI')
+    LOGIN_DISABLED = False
     
 
 class TestingConfig(BaseConfig):
     DEBUG = True
     SQLALCHEMY_DATABASE_URI = os.getenv('TESTING_DATABASE_URI')
+    LOGIN_DISABLED = True
+    
 
 class ProductionConfig(BaseConfig):
     DEBUG = False

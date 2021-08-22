@@ -1,52 +1,48 @@
-from app import db, mail
-from app.emails import send_email
-from app.models import UserModel,db,login
-from app.gpt2 import *
-from flask import request, redirect, url_for, render_template, Blueprint, Flask, jsonify
-from flask_jwt_extended import jwt_required, create_access_token, get_jwt_identity
+from flask import request, redirect, url_for, render_template, Blueprint, Flask, flash
 from flask_login import login_required, current_user, login_user, logout_user
-from elasticsearch import Elasticsearch
-from app.database import mongoinit
 
-from bson import json_util
+from app import db, mail
+from .emails import send_email
+from .forms import RegisterForm, LoginForm, ResetPasswordForm, NewPasswordForm
+from .models import UserModel
+from .database import mongoinit
+from .gpt2 import *
+
 import json
-
+from os import path
 import logging.config
+
+################
+#### routes ####
+################
 
 app_routes = Blueprint('app_routes', __name__)
 
-logging.config.fileConfig('../src/app/logging.cfg', disable_existing_loggers=False)
+log_file_path = path.join(path.dirname(path.abspath(__file__)), 'logging.cfg')
+logging.config.fileConfig(log_file_path, disable_existing_loggers=False)
 logger = logging.getLogger(__name__)
-
-# logger.debug('debug message')
-# logger.info('info message')
-# logger.warning('warn message')
-# logger.error('error message')
-# logger.critical('critical message')
 
 @app_routes.before_app_first_request
 def create_all():
     db.create_all()
     logger.info('Create the tables and database if not exist')
 
-@app_routes.route('/')
-def athome():
-    if current_user.is_authenticated:
-        logger.info('Homepage with login session')
-        return redirect('/home')
-    logger.info('Homepage without login session')
-    return render_template('accueil.html'), 200
+@app_routes.route('/', methods=['GET','POST'])
+def homepage():
+    return redirect(url_for('app_routes.login'))
+    
 
 @app_routes.route('/home', methods=['GET','POST'])
 @login_required
 def home():
-    if request.method == 'GET':
-        logger.info('Homepage with login session')
-        return render_template('home.html'), 200
+
+    #if request.method == 'GET':
+    #    logger.info('Homepage with login session')
+    #    return render_template('home.html'), 200
 
     if request.method == 'POST': 
 
-        if request.form.get("Instructions_button"):
+        if request.form.get("instructions_button"):
             title = request.form['title'] # preprocessing sur les inputs
             ingredients = request.form['ingredients'] # preprocessing sur les inputs
             # Converting str to list
@@ -109,80 +105,85 @@ def home():
                 print(img_tag)
 
                 logger.info('Similar recipe from mongoDB')
-                #return json.dumps(result, indent=4, default=json_util.default, ensure_ascii=False).encode('utf8')
                 return render_template('result_similar.html', title = title[0], ingredients = ingredients[0][0], result_instruction = instructions[0], image_link=image_link[0]), 200
 
     return render_template('home.html'), 200
 
-@app_routes.route('/login', methods=['GET', 'POST'])
-def login():
-    if current_user.is_authenticated:
-        logger.info('Already authenticated')
-        return redirect(url_for('app_routes.home'))
-
-    if request.method == 'GET':
-        logger.info('Not authenticated')
-        return render_template('login.html'), 200
-
-    if request.method == 'POST':
-        email = request.form['email']
-        user = UserModel.query.filter_by(email = email).first()
-        if user is not None and user.check_password(request.form['pass']):
-            login_user(user)
-            logger.info('Profil login')
-            return redirect(url_for('app_routes.home')), 200
-
-        logger.error('Missing informations or error for login')
-        return render_template('login.html'), 400
-
-    logger.error('Missing informations or error for login')
-    return render_template('login.html'), 400
 
 @app_routes.route('/signup', methods=['GET', 'POST'])
 def signup():
+    # If the User is already logged in, don't allow them to try to register
     if current_user.is_authenticated:
+        flash('Already registered!  Redirecting to your User Profile page...')
         logger.info('Already authenticated')
         return redirect(url_for('app_routes.home'))
 
+    form = RegisterForm()
     if request.method == 'GET':
-        logger.info('No authenticated')
-        return render_template('signup.html'), 200
+        return render_template('signup.html', form=form), 200
+
+    if request.method == 'POST' and form.validate_on_submit():
+        new_user = UserModel(form.username.data, form.email.data, form.password.data)
+        db.session.add(new_user)
+        db.session.commit()
+        login_user(new_user)
+        flash('Thanks for registering, {}!'.format(new_user.username))
+        logger.info('{} registered'.format(new_user.username))
+        return redirect(url_for('app_routes.home')), 200
+    logger.error('Missing informations or error for signup')  
+    return render_template('signup.html', form=form), 400
+
+
+@app_routes.route('/login', methods=['GET', 'POST'])
+def login():
+    # If the User is already logged in, don't allow them to try to log in again
+    if current_user.is_authenticated:
+        flash('Already logged in!  Redirecting to your User Profile page...')
+        logger.info('Already authenticated')
+        return redirect(url_for('app_routes.home'))
+
+    form = LoginForm()
+    if request.method == 'GET':
+        return render_template('login.html', form=form), 200
 
     if request.method == 'POST':
-        email = request.form['email']
-        username = request.form['username']
-        password = request.form['pass']
-        ctrlpass = request.form['ctrlpass']
- 
-        if UserModel.query.filter_by(email=email).first():
-            logger.info('Email already Present')
-            return ('Email already Present')
-             
-        user = UserModel(email=email, username=username)
-        user.set_password(password)
-        db.session.add(user)
-        db.session.commit()
-        logger.info('Profil signup')
-        return redirect(url_for('app_routes.login'))
-    logger.error('Missing informations or error for signup')    
-    return render_template('signup.html'), 400
+        if form.validate_on_submit():
+            user = UserModel.query.filter_by(email=form.email.data).first()
+            if user and user.check_password(form.password.data):
+                db.session.add(user)
+                db.session.commit()
+                login_user(user, remember=form.remember_me.data)
+                flash('Thanks for logging in, {}!'.format(current_user.username))
+                logger.info('{} logging in'.format(current_user.username))
+                #return redirect(url_for('app_routes.home')), 200
+                return render_template('home.html'), 200
+
+        flash('ERROR! Incorrect login credentials.')
+        logger.error('Missing informations or error for login')
+    return render_template('login.html', form=form), 400
+
 
 @app_routes.route('/password_reset', methods=['GET', 'POST'])
 def reset():
+    form = ResetPasswordForm()
     if request.method == 'GET':
-        return render_template('reset.html')
+        return render_template('reset.html', form=form)
 
     if request.method == 'POST':
-        email = request.form['email']
-        user = UserModel.verify_email(email)
-        if user:
-            send_email(user)
-            logger.info('The email has been sent')
-            return render_template('send_confirmation.html'), 200
-        return redirect(url_for('app_routes.login'))
+        if form.validate_on_submit():
+            user = UserModel.verify_email(email=form.email.data)
+            if user:
+                send_email(user)
+                logger.info('The email has been sent')
+                return render_template('send_confirmation.html'), 200
+
+        flash('ERROR! Incorrect email credentials.')    
+        logger.error('This email does not exist in the database')
+    return render_template('reset.html', form=form)
 
 @app_routes.route('/password_reset_verified/<token>', methods=['GET', 'POST'])
 def reset_verified(token):
+    form = NewPasswordForm()
     user = UserModel.verify_reset_token(token)
     if not user:
         print('no user found')
@@ -190,28 +191,34 @@ def reset_verified(token):
         return redirect(url_for('app_routes.login')) # redirect('/login') 
 
     if request.method == 'POST':
-        password = request.form['pass'] # request.form.get('pass')
-        if password:
-            user.set_password(password, commit=True)
+        if form.validate_on_submit():
+            user.set_password(form.password.data, commit=True)
             logger.info('New password set up')
-            return redirect(url_for('app_routes.login')) 
+            return redirect(url_for('app_routes.login'))
 
-    logger.info('The email has been reset')
-    return render_template('reset_verified.html')
+        flash('ERROR! Incorrect password credentials.')    
+        logger.error('This password does not registered')
+    return render_template('reset_verified.html', form=form)
+
 
 @app_routes.route('/logout')
+@login_required
 def logout():
+    user = current_user
+    db.session.add(user)
+    db.session.commit()
     logout_user()
-    logger.info('Disconnection validated')
-    return redirect(url_for('app_routes.home'))
+    flash('Goodbye!')
+    logger.info('You are log out')
+    return redirect(url_for('app_routes.login'))
 
-@app_routes.route('/add_comments', methods=['GET', 'POST'])
-def add_comments():
-    if request.form.get("instructions_button"):
-        pass
-    elif request.form.get("instructions_button"):
-        pass
-    else:
-        pass
-    return render_template('result.html', title = title, ingredients = ingredients, result_instruction = result_instruction), 200
+#@app_routes.route('/add_comments', methods=['GET', 'POST'])
+#def add_comments():
+#    if request.form.get("instructions_button"):
+#        pass
+#    elif request.form.get("instructions_button"):
+#        pass
+#    else:
+#        pass
+#    return render_template('result.html', title = title, ingredients = ingredients, result_instruction = result_instruction), 200
 

@@ -1,14 +1,13 @@
-# TO DO -> Index
-#from config import *
 from settings import *
 from app import create_app
 from app import mail
 from flask_mail import Message
 
-# https://stackoverflow.com/questions/16512592/login-credentials-not-working-with-gmail-smtp
+# Call the application factory function to construct a Flask application
+# instance using the development configuration
 
 #app = create_app(BaseConfig)
-app = create_app(os.getenv('FLASK_ENV') or 'config.DevelopementConfig')
+app = create_app('settings.DevelopementConfig') #or 'config.DevelopementConfig')
 
 @app.route('/')
 def index():
