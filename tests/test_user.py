@@ -1,4 +1,3 @@
-# https://gitlab.com/patkennedy79/flask_user_management_example/-/blob/main/tests/functional/test_users.py
 from flask_login import LoginManager
 from src.app.models import UserModel
 
