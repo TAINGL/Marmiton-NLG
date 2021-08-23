@@ -1,6 +1,6 @@
 #import sys
 #sys.path.append('/Users/Johanna/Documents/SIMPLON DATA IA/TITRE PRO/PROJET CD/src/')
-#
+
 from flask import Flask, redirect, render_template, flash, url_for
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
@@ -9,6 +9,8 @@ from flask_jwt_extended import JWTManager
 from flask_wtf.csrf import CSRFProtect
 from flask_mail import Mail
 from app.database import mongoinit
+import flask_monitoringdashboard as dashboard
+
 
 
 #######################
@@ -36,6 +38,7 @@ def create_app(config=None):
     app.config.from_object(config)
     initialize_extensions(app)
     register_blueprints(app)
+    dashboard.bind(app)
     return app
 
 
