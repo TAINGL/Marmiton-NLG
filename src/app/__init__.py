@@ -1,7 +1,7 @@
 #import sys
 #sys.path.append('/Users/Johanna/Documents/SIMPLON DATA IA/TITRE PRO/PROJET CD/src/')
 #
-from flask import Flask, redirect,request, flash, url_for
+from flask import Flask, redirect, render_template, flash, url_for
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from flask_migrate import Migrate
@@ -53,10 +53,10 @@ def initialize_extensions(app):
     login.init_app(app)
     jwt.init_app(app)
     mail.init_app(app)
-    csrf.init_app(app)
+    #csrf.init_app(app)
 
     # Flask-Login configuration
-    from app.models import UserModel
+    from .models import UserModel
 
     @login.user_loader
     def load_user(user_id):
@@ -69,10 +69,44 @@ def initialize_extensions(app):
         flash('You must be logged in to view that page.')
         return redirect(url_for('app_routes.login'))    
 
+    @app.errorhandler(404)
+    def page_not_found(e):
+        e = 404
+        return redirect(url_for('app_routes.handle_unexpected_error'))
+        #return render_template('404.html'), 404
+
 
 def register_blueprints(app):
     # Since the application instance is now created, register each Blueprint
     # with the Flask application instance (app)
-    from app.views import app_routes
+    from .views import app_routes
 
     app.register_blueprint(app_routes)
+
+
+######################################
+#### Application Error Handling ####
+######################################
+# Register the handlers against all the loggers we have in play
+# This is done after app configuration and SQLAlchemy initialisation, 
+# drop the sqlalchemy if not using - I thought a full example would be helpful.
+import logging
+from settings import DevelopementConfig
+from app.errorlogger import mail_handler
+
+#from .utils.logs import mail_handler, file_handler
+#loggers = [app.logger, logging.getLogger('sqlalchemy'), logging.getLogger('werkzeug')]
+import logging.config
+
+from os import path
+log_file_path = path.join(path.dirname(path.abspath(__file__)), 'logging.cfg')
+logging.config.fileConfig(log_file_path, disable_existing_loggers=False)
+
+logger = logging.getLogger(__name__)
+
+logger.addHandler(mail_handler)
+# Note - I added a boolean configuration parameter, MAIL_ON_ERROR, 
+# to allow direct control over whether to email on errors. 
+# You may wish to use 'if not app.debug' instead.
+if not DevelopementConfig.DEBUG:
+    logger.addHandler(mail_handler)
