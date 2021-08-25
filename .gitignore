@@ -32,3 +32,4 @@ src/app/static/vendor/bootstrap/.DS_Store
 src/app/templates/.DS_Store
 src/db/.DS_Store
 tests/.DS_Store
+src/app/__init__.pyc
