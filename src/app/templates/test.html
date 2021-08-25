@@ -1,0 +1,45 @@
+<!-- app/templates/home/admin_dashboard.html -->
+
+{% extends "base.html" %}
+{% block title %}Admin Dashboard{% endblock %}
+{% block body %}
+
+    <div class="col-md-12">
+        <table class="table table-bordered table-hover">
+            <thead>
+            <tr>
+                <th>Id</th>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Operations</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for user in users %}
+            <tr>
+                <td>{{ user.id }}</td>
+                <td><strong>{{ user.username }}</strong></td>
+                <td>{{ user.email }}</td>
+                <td>
+                    <a class="{{ 'btn btn-success' if users.status else 'btn btn-dark'}}"
+                        href="/turn/{{ users.id }}">
+                        Turn Status
+                    </a>
+                    <a class="btn btn-danger"
+                        href="/delete/{{ users.id }}">
+                        Delete
+                    </a>
+                    <a class="btn btn-info"
+                        href="/update/{{ users.id }}">
+                        Edit
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+
+        </table>
+    </div>
+{% endblock %}
+
+

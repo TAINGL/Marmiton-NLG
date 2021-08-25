@@ -1,7 +1,8 @@
-from flask import request, redirect, url_for, render_template, Blueprint, Flask, flash
+from flask import request, redirect, url_for, render_template, Blueprint, abort, flash
 from flask_login import login_required, current_user, login_user, logout_user
+from sqlalchemy.exc import IntegrityError
 
-from app import db, mail
+from app import db, mail, create_admin
 from .emails import send_email
 from .forms import RegisterForm, LoginForm, ResetPasswordForm, NewPasswordForm
 from .models import UserModel
@@ -17,6 +18,8 @@ import logging.config
 ################
 
 app_routes = Blueprint('app_routes', __name__)
+admin = Blueprint('admin', __name__)
+
 
 log_file_path = path.join(path.dirname(path.abspath(__file__)), 'logging.cfg')
 logging.config.fileConfig(log_file_path, disable_existing_loggers=False)
@@ -24,6 +27,7 @@ logger = logging.getLogger(__name__)
 
 @app_routes.before_app_first_request
 def create_all():
+    create_admin(exist = UserModel.admin_exist())
     db.create_all()
     logger.info('Create the tables and database if not exist')
 
@@ -116,20 +120,26 @@ def signup():
     if current_user.is_authenticated:
         flash('Already registered!  Redirecting to your User Profile page...')
         logger.info('Already authenticated')
-        return redirect(url_for('app_routes.home'))
+        return render_template('home.html'), 200
 
     form = RegisterForm()
     if request.method == 'GET':
         return render_template('signup.html', form=form), 200
 
     if request.method == 'POST' and form.validate_on_submit():
-        new_user = UserModel(form.username.data, form.email.data, form.password.data)
-        db.session.add(new_user)
-        db.session.commit()
-        login_user(new_user)
-        flash('Thanks for registering, {}!'.format(new_user.username))
-        logger.info('{} registered'.format(new_user.username))
-        return redirect(url_for('app_routes.home')), 200
+        try:
+            new_user = UserModel(form.username.data, form.email.data, form.password.data)
+            db.session.add(new_user)
+            db.session.commit()
+            login_user(new_user)
+            flash('Thanks for registering, {}!'.format(new_user.username))
+            logger.info('{} registered'.format(new_user.username))
+            return render_template('home.html'), 200
+        except IntegrityError:
+            db.session.rollback()
+            logger.error('This member already exists')
+            return render_template('integrityerror.html'), 200
+
     logger.error('Missing informations or error for signup')  
     return render_template('signup.html', form=form), 400
 
@@ -140,7 +150,7 @@ def login():
     if current_user.is_authenticated:
         flash('Already logged in!  Redirecting to your User Profile page...')
         logger.info('Already authenticated')
-        return redirect(url_for('app_routes.home'))
+        return redirect(url_for('app_routes.home'))        
 
     form = LoginForm()
     if request.method == 'GET':
@@ -158,8 +168,8 @@ def login():
                 #return redirect(url_for('app_routes.home')), 200
                 return render_template('home.html'), 200
 
-        flash('ERROR! Incorrect login credentials.')
-        logger.error('Missing informations or error for login')
+    flash('ERROR! Incorrect login credentials.')
+    logger.error('Missing informations or error for login')
     return render_template('login.html', form=form), 400
 
 
@@ -211,6 +221,14 @@ def logout():
     flash('Goodbye!')
     logger.info('You are log out')
     return redirect(url_for('app_routes.login'))
+
+@app_routes.route('/error')
+def handle_unexpected_error(e):
+    if e == 404:
+        return render_template('404_error.html')
+    if e == 500:
+        return render_template('500_error.html')
+
 
 #@app_routes.route('/add_comments', methods=['GET', 'POST'])
 #def add_comments():

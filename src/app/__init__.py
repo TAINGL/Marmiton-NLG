@@ -1,6 +1,7 @@
 #import sys
 #sys.path.append('/Users/Johanna/Documents/SIMPLON DATA IA/TITRE PRO/PROJET CD/src/')
 
+import flask_monitoringdashboard as dashboard
 from flask import Flask, redirect, render_template, flash, url_for
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
@@ -8,8 +9,9 @@ from flask_migrate import Migrate
 from flask_jwt_extended import JWTManager
 from flask_wtf.csrf import CSRFProtect
 from flask_mail import Mail
+from werkzeug.security import generate_password_hash
 from app.database import mongoinit
-import flask_monitoringdashboard as dashboard
+
 
 
 
@@ -41,7 +43,6 @@ def create_app(config=None):
     dashboard.bind(app)
     return app
 
-
 ##########################
 #### Helper Functions ####
 ##########################
@@ -64,7 +65,11 @@ def initialize_extensions(app):
     @login.user_loader
     def load_user(user_id):
         """Check if user is logged-in on every page load."""
-        return UserModel.query.filter(UserModel.id == int(user_id)).first()
+        try:
+            return UserModel.query.filter(UserModel.id == int(user_id)).first()
+        except:
+            return None    
+        #return UserModel.query.filter(UserModel.id == int(user_id)).first()
 
     @login.unauthorized_handler
     def unauthorized():
@@ -74,8 +79,10 @@ def initialize_extensions(app):
 
     @app.errorhandler(404)
     def page_not_found(e):
-        e = 404
-        return redirect(url_for('app_routes.handle_unexpected_error'))
+        if e == 404:
+            return redirect(url_for('app_routes.handle_unexpected_error'))
+        if e == 500:
+            return redirect(url_for('app_routes.handle_unexpected_error'))
         #return render_template('404.html'), 404
 
 
@@ -83,8 +90,18 @@ def register_blueprints(app):
     # Since the application instance is now created, register each Blueprint
     # with the Flask application instance (app)
     from .views import app_routes
+    from .admin import admin
 
     app.register_blueprint(app_routes)
+    app.register_blueprint(admin)
+
+from .models import UserModel, ACCESS
+def create_admin(exist = False):
+    if exist == False:
+        admin = UserModel(username="admin",email="admin@admin.com",plaintext_password="admin2021",access= ACCESS['admin'])
+        db.session.add(admin)
+        db.session.commit()
+
 
 
 ######################################

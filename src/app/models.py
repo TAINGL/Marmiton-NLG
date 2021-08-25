@@ -1,13 +1,21 @@
 import os
 import jwt
-from app import db, login
+
 from datetime import datetime
 from time import time
 from flask_sqlalchemy import SQLAlchemy
-from flask_login import UserMixin, LoginManager
+from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
+
+from app import db
 from settings import *
  
+
+ACCESS = {
+    'guest': 0,
+    'user': 1,
+    'admin': 2
+}
 class UserModel(UserMixin, db.Model):
     """
     Class that represents a user of the application
@@ -28,9 +36,9 @@ class UserModel(UserMixin, db.Model):
     email = db.Column(db.String(60), unique=True, nullable=False)
     hashed_password = db.Column(db.String(60), nullable=False)
     registered_on = db.Column(db.DateTime, nullable=True)
-    role = db.Column(db.String, default='user')
+    access = db.Column(db.Integer, default=1)
 
-    def __init__(self, username, email, plaintext_password, role='user'):
+    def __init__(self, username, email, plaintext_password, access=ACCESS['user']):
         """
         Create a new User object using the email address and hashing the
         plaintext password using Bcrypt.
@@ -39,7 +47,14 @@ class UserModel(UserMixin, db.Model):
         self.email = email
         self.hashed_password = generate_password_hash(plaintext_password)
         self.registered_on = datetime.now()
-        self.role = role
+        self.access = access
+
+    def is_admin(self):
+        return self.access == ACCESS['admin']
+    
+    def allowed(self, access_level):
+        return self.access >= access_level
+
 
     def check_password(self, plaintext_password:str):
         return check_password_hash(self.hashed_password, plaintext_password)
@@ -58,6 +73,14 @@ class UserModel(UserMixin, db.Model):
         return 'User {}'.format(self.username)
 
     @staticmethod
+    def admin_exist():
+        user_exists = UserModel.query.filter_by(username='admin')
+        #print(user_exists)
+        if user_exists:
+            return True
+        return False
+
+    @staticmethod
     def verify_reset_token(token):
         try:
             username = jwt.decode(token, key=os.getenv('SECRET_KEY'), algorithms=["HS256"])['reset_password']
@@ -69,7 +92,6 @@ class UserModel(UserMixin, db.Model):
 
     @staticmethod
     def create_user(username, plaintext_password, email):
-
         user_exists = UserModel.query.filter_by(email=email).first()
         if user_exists:
             return False
@@ -87,7 +109,6 @@ class UserModel(UserMixin, db.Model):
 
     @staticmethod
     def login_user(email, plaintext_password):
-
         user = UserModel.query.filter_by(email=email).first()
 
         if user:
@@ -97,7 +118,6 @@ class UserModel(UserMixin, db.Model):
 
     @staticmethod
     def verify_email(email):
-
         user = UserModel.query.filter_by(email=email).first()
         return user
 
