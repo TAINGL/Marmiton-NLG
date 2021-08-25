@@ -11,6 +11,7 @@ from flask_wtf.csrf import CSRFProtect
 from flask_mail import Mail
 from werkzeug.security import generate_password_hash
 from app.database import mongoinit
+from settings import *
 
 
 
@@ -98,7 +99,7 @@ def register_blueprints(app):
 from .models import UserModel, ACCESS
 def create_admin(exist = False):
     if exist == False:
-        admin = UserModel(username="admin",email="admin@admin.com",plaintext_password="admin2021",access= ACCESS['admin'])
+        admin = UserModel(username=ADMIN_USERNAME,email=ADMIN_EMAIL,plaintext_password=ADMIN_PASSWORD,access= ADMIN_ACCESS)
         db.session.add(admin)
         db.session.commit()
 

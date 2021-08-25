@@ -6,6 +6,9 @@ from dotenv import load_dotenv
 ## using existing module to specify location of the .env file
 from pathlib import Path
 import os
+
+import sys
+import uuid
  
 app_dir = os.path.abspath(os.path.dirname(__file__))
 
@@ -19,6 +22,10 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 MAIL_USERNAME = os.getenv("MAIL_USERNAME")
 MAIL_PASSWORD = os.getenv("MAIL_PASSWORD")
 
+ADMIN_USERNAME = os.getenv('ADMIN_USERNAME')
+ADMIN_EMAIL = os.getenv('ADMIN_EMAIL')
+ADMIN_PASSWORD = os.getenv('ADMIN_PASSWORD')
+ADMIN_ACCESS = os.getenv('ADMIN_ACCESS')
 
 class BaseConfig:
     SECRET_KEY = os.getenv("SECRET_KEY")
@@ -44,6 +51,8 @@ class TestingConfig(BaseConfig):
     DEBUG = True
     SQLALCHEMY_DATABASE_URI = os.getenv('TESTING_DATABASE_URI')
     LOGIN_DISABLED = True
+    WTF_CSRF_ENABLED = False
+    #SESSION_COOKIE_SECURE = False
     
 
 class ProductionConfig(BaseConfig):
@@ -67,7 +76,4 @@ class MongodbConfig(localdb):
     URI = 'mongodb://localhost:27017/RecipeNLG'
 
 class EsConfig():
-    ELASTICSEARCH_URL = os.getenv('ELASTICSEARCH_URL') 
-    
-
-
+    ELASTICSEARCH_URL = os.getenv('ELASTICSEARCH_URL')

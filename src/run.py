@@ -9,8 +9,8 @@ app = create_app('settings.DevelopementConfig')
 
 @app.route('/')
 def index():
-    sender = 'tainglaura.contact@gmail.com'
-    recipients = ['tainglaura.contact@gmail.com']
+    sender = os.getenv('MAIL_USERNAME')
+    recipients = [os.getenv('MAIL_USERNAME')]
     msg = Message()
     msg.subject = "Test Send"
     msg.recipients = recipients
