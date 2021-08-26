@@ -222,14 +222,6 @@ def logout():
     logger.info('You are log out')
     return redirect(url_for('app_routes.login'))
 
-@app_routes.route('/error')
-def handle_unexpected_error(e):
-    if e == 404:
-        return render_template('404_error.html')
-    if e == 500:
-        return render_template('500_error.html')
-
-
 #@app_routes.route('/add_comments', methods=['GET', 'POST'])
 #def add_comments():
 #    if request.form.get("instructions_button"):

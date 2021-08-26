@@ -1,6 +1,6 @@
-from flask import request, redirect, render_template, Blueprint, abort, flash
-from flask_login import login_required, current_user, login_user, logout_user
-# from sqlalchemy.exc import IntegrityError
+from os import access
+from flask import request, redirect, render_template, Blueprint, abort, flash, url_for
+from flask_login import login_required, current_user
 
 from app import db
 from .forms import *
@@ -20,12 +20,13 @@ def admin_dashboard():
     # prevent non-admins from accessing the page
     if not current_user.is_admin():
         #abort(403)
-        return render_template('403_error.html')
-
-    users = UserModel.query.all()
+        return render_template('dashboard.html')
+    
+    users = UserModel.query.filter_by(access=1).all()
+    # users = UserModel.query.all()
     print(users)
     
-    return render_template('tabletest.html', title="Dashboard", users=users)
+    return render_template('table.html', title="Dashboard", users=users)
 
 @admin.route('/dashboard')
 @login_required
@@ -36,62 +37,18 @@ def dashboard():
         return render_template('403_error.html')
     return redirect('http://localhost:5000/dashboard/overview')
 
-#@admin.route('/add', methods=['POST'])
-#def add():
-#    if request.method == 'POST':
-#        form = request.form
-#        username = form.get('username')
-#        email = form.get('email')
-#        if not username or email:
-#            users = UserModel(username = username, email = email)
-#            db.session.add(users)
-#            db.session.commit()
-#            return redirect('/')
-#
-#    return "of the jedi"
+
+@admin.route('/delete/<int:user_id>', methods=['POST'])
+def delete(user_id):
+    users = UserModel.query.get_or_404(user_id)
+    if users:
+        db.session.delete(users)
+        db.session.commit()
+        flash('User Id deleted.')
+        return redirect(url_for('admin.admin_dashboard'))
+    return redirect(url_for('admin.admin_dashboard'))
 
 
-@admin.route('/update/<int:id>')
-def updateRoute(id):
-    if not id or id != 0:
-        users = UserModel.query.get(id)
-        if users:
-            return render_template('update.html', users=users)
-
-    return "of the jedi"
-
-
-@admin.route('/update', methods=['POST'])
-def update():
-    if not id or id != 0:
-        users = UserModel.query.get(id)
-        if users:
-            db.session.delete(users)
-            db.session.commit()
-        return redirect('/')
-
-    return "of the jedi"
-
-
-@admin.route('/delete/<int:id>')
-def delete(id):
-    if not id or id != 0:
-        users = UserModel.query.get(id)
-        if users:
-            db.session.delete(users)
-            db.session.commit()
-        return redirect('/')
-
-    return "of the jedi"
-
-
-@admin.route('/turn/<int:id>')
-def turn(id):
-    if not id or id != 0:
-        users = UserModel.query.get(id)
-        if users:
-            users.status = not users.status
-            db.session.commit()
-        return redirect('/')
-
-    return "of the jedi"
+@admin.route('/recipe_dashboard')
+def recipe_dashboard():
+    return render_template('dashboard.html')

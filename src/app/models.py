@@ -16,6 +16,16 @@ ACCESS = {
     'user': 1,
     'admin': 2
 }
+# class Recipe(db.Model):
+#     id = db.Column(db.Integer, primary_key=True)
+#     title = db.Column(db.String(60), unique=True)
+#     ingredients = db.Column(db.String(60))
+#     instruction = db.Column(db.String(300))
+#     with_generation = db.Column(db.Integer())
+#     commentaire = db.Column(db.String(500))
+#     rating = db.Column(db.Integer())
+#     user_id = db.Column(db.Integer, foreign_keys=True)
+#     registered_on = db.Column(db.DateTime, nullable=True)
 class UserModel(UserMixin, db.Model):
     """
     Class that represents a user of the application

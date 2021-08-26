@@ -51,12 +51,11 @@
               </div>
               {% if current_user.is_authenticated %}
               {% if current_user.is_admin %}
-              <a class="btn btn-white shadow-warning text-warning" type="submit" href="{{ url_for('admin.dashboard') }}"><i class="fas fa-user me-2"></i>Monitor</a>
-              <a class="btn btn-white shadow-warning text-warning" type="submit" href="{{ url_for('admin.admin_dashboard') }}"><i class="fas fa-user me-2"></i>Dashboard</a>
+              <a class="btn btn-white shadow-warning text-warning" type="submit" href="{{ url_for('admin.dashboard') }}"><i class="fa fa-cog fa-fw me-2"></i>Monitor</a>
+              <a class="btn btn-white shadow-warning text-warning" type="submit" href="{{ url_for('admin.admin_dashboard') }}"><i class="fas fa-book-reader me-2"></i>Dashboard</a>
               {% endif %}
               {% endif %}
-              <!--<a class="btn btn-white shadow-warning text-warning" type="submit" href="{{ url_for('app_routes.login') }}"> <i class="fas fa-user me-2"></i>Login</a>-->
-              <a class="btn btn-white shadow-warning text-warning" type="submit" href="{{ url_for('app_routes.logout') }}"> <i class="fas fa-user me-2"></i>Logout</a>
+              <a class="btn btn-white shadow-warning text-warning" type="submit" href="{{ url_for('app_routes.logout') }}"> <i class="fas fa-sign-out-alt me-2"></i>Logout</a>
             </form>
           </div>
         </div>

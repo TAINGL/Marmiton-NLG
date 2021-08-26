@@ -70,21 +70,30 @@ def initialize_extensions(app):
             return UserModel.query.filter(UserModel.id == int(user_id)).first()
         except:
             return None    
-        #return UserModel.query.filter(UserModel.id == int(user_id)).first()
 
     @login.unauthorized_handler
     def unauthorized():
         """Redirect unauthorized users to Login page."""
         flash('You must be logged in to view that page.')
-        return redirect(url_for('app_routes.login'))    
+        return redirect(url_for('app_routes.login'))
+
+    @app.errorhandler(403)
+    def method_not_allowed(e):   
+        e = 403
+        logger.error(f"Unknown Exception: {str(e)}, Authentication Error")
+        return render_template('403_error.html'), 403
 
     @app.errorhandler(404)
     def page_not_found(e):
-        if e == 404:
-            return redirect(url_for('app_routes.handle_unexpected_error'))
-        if e == 500:
-            return redirect(url_for('app_routes.handle_unexpected_error'))
-        #return render_template('404.html'), 404
+        e = 404
+        logger.error(f"Unknown Exception: {str(e)}, Page not found")
+        return render_template('404_error.html'), 404
+
+    @app.errorhandler(500)
+    def internal_server_error(e):
+        e = 500
+        logger.error(f"Unknown Exception: {str(e)}, Internal Server Error")
+        return render_template('500_error.html'), 500
 
 
 def register_blueprints(app):
