@@ -19,6 +19,8 @@ import logging.config
 
 app_routes = Blueprint('app_routes', __name__)
 admin = Blueprint('admin', __name__)
+user = Blueprint('user', __name__)
+
 
 
 log_file_path = path.join(path.dirname(path.abspath(__file__)), 'logging.cfg')
@@ -54,7 +56,21 @@ def home():
             print(ingredients)
             print(keywords)
             result_instruction = get_instruction(title, keywords)
+
+            collection = 'recipeNLG'
+            get_id = current_user.id
+            print(get_id)
+            recipeNLG_dict = { "titles": title, 
+                               "ingredients": keywords,
+                               "instructions": result_instruction,
+                               "rate": None,
+                               "review": None,
+                               "id_user": get_id                             
+                               }
+            mongoinit.insert(collection, recipeNLG_dict)
             logger.info('Generation of instructions')
+            logger.info('Generation of instructions storage in MongoDB')
+            print('Data Storage in DB!')
             return render_template('result_nlg.html', title = title, ingredients = ingredients, result_instruction = result_instruction), 200
 
         elif request.form.get("recipe_button"): 
@@ -71,7 +87,7 @@ def home():
             #print(keywords)
 
             if title != "" and ingredients != "":
-                result = mongoinit.find_one('recipe',
+                result = mongoinit.find_one(collection,
                     {
                         "$and": [
                                 {"titles":{ "$regex" : title}},
@@ -80,12 +96,12 @@ def home():
                     }
                     )
             elif title != "" and ingredients == "":
-                result = mongoinit.find_one('recipe', {"titles" : { "$regex" : title }})
+                result = mongoinit.find_one(collection, {"titles" : { "$regex" : title }})
             elif ingredients != "" and title == "":
-                result = mongoinit.find_one('recipe', {"NER" : { "$all" : keywords }})
+                result = mongoinit.find_one(collection, {"NER" : { "$all" : keywords }})
 
             else:
-                result = mongoinit.get_random_doc('recipe')
+                result = mongoinit.get_random_doc(collection)
                 
 
             if result == None:
@@ -107,6 +123,7 @@ def home():
 
                 img_tag = '<img src="{0}">'.format(image_link[0])
                 print(img_tag)
+
 
                 logger.info('Similar recipe from mongoDB')
                 return render_template('result_similar.html', title = title[0], ingredients = ingredients[0][0], result_instruction = instructions[0], image_link=image_link[0]), 200

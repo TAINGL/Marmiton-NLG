@@ -69,22 +69,39 @@
                 <div class="card-body">
                   <nav>
                     <div class="nav nav-tabs" id="nav-tab" role="tablist">
-                      <h1 class="nav-link mb-3" type="text" aria-controls="nav-profile" aria-selected="false"><img src="../static/public/assets/img/icons/titre.png" width="40" height="40" ></i> {{ title }} </h1>
+                      <h1 class="nav-link mb-3" type="text" aria-controls="nav-profile" aria-selected="false"><img src="../static/public/assets/img/icons/titre.png" width="40" height="40" ></i> {% if title %} {{ title }} {% elif ref_titles %} {{ ref_titles }} {% endif %} </h1>
                     </div>
                   </nav>
                   <div class="tab-content mt-3" id="nav-tabContent">
                     <div class="tab-pane fade show active" id="nav-home" role="tabpanel" aria-labelledby="nav-home-tab">
-                      <form class="row gx-2 gy-2 align-items-center" method="POST" action="/home">
+                      <form class="row gx-2 gy-2 align-items-center" method="POST" action="/review">
                         <div class="col">
                           <div class="input-group-icon">
-                            <h5 class="mt-4 fw-bold mb-2"><img src="../static/public/assets/img/icons/ingredients.png" width="30" height="30" >{{ ingredients }}</h5>
-                            <p class="mb-md-0">{{ result_instruction }}</p>
+                            <h5 class="mt-4 fw-bold mb-2"><img src="../static/public/assets/img/icons/ingredients.png" width="30" height="30" > {% if ingredients %} {{ ingredients }} {% elif ref_ingredients %} {{ ref_ingredients }} {% endif %} </h5>
+                            <p class="mb-md-0"> {% if result_instruction %} {{ result_instruction }} {% elif ref_instructions %} {{ ref_instructions }} {% endif %} </p>
+                          </div>
+                        </div>
+                        <div class="star-widget">
+                          <span>Votre notation: </span>
+                          <label for="rate-5" class="form-check-label">5</label>
+                            <input type="radio" name="rate" id="rate-5" value=5>
+                          <label for="rate-4" class="form-check-label">4</label>
+                            <input type="radio" name="rate" id="rate-4" value=4>
+                          <label for="rate-3" class="form-check-label">3</label>
+                            <input type="radio" name="rate" id="rate-3" value=3>
+                          <label for="rate-2" class="form-check-label">2</label>
+                            <input type="radio" name="rate" id="rate-2" value=2>
+                          <label for="rate-1" class="form-check-label">1</label>
+                            <input type="radio" name="rate" id="rate-1" value=1>
+                          <div class="input-group-icon">
+                            <input class="form-control input-box form-foodwagon-control mb-2" id="inputreview" type="text" name="review" placeholder="Votre avis nous intéresse:" />
+                          </div>
+                          <p>{% if message %} {{ message }} {% endif %}</p>
                           </div>
                         </div>
                         <div class="input-group-icon">
-                            <a class="btn btn-danger mb-1" type="submit" href="{{ url_for('app_routes.home') }}"></i>Générer une nouvelle recette</a> 
-                            <a class="btn btn-danger mb-1" type="submit" href="{{ url_for('app_routes.home') }}"></i>Sauvegarder la recette</a> 
-                            <a class="btn btn-danger mb-1" type="submit" href="{{ url_for('app_routes.home') }}"></i>Rechercher une recette similaire</a> 
+                            <button class="btn btn-danger mb-1" type="submit" name="review_button" value="Review" href="{{ url_for('user.review') }}"></i>Sauvegarder la recette et/ou poster votre notation et votre avis</button> 
+                            <a class="btn btn-danger mb-1" type="submit" href="{{ url_for('app_routes.home') }}"></i>Retourner à la page d'accueil</a> 
                             <button class="btn btn-danger mb-1" type="submit"><img src="../static/public/assets/img/icons/envoyer-un-mail.png" width="20" height="20"></button>
                         </div>
                       </form>

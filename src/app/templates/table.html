@@ -56,7 +56,7 @@
                 {% if current_user.is_authenticated %}
                 {% if current_user.is_admin %}
 					<a class="btn btn-white shadow-warning text-warning" type="submit" href="{{ url_for('admin.admin_dashboard') }}"><i class="fa fa-cog fa-fw me-2"></i>Monitor</a>
-					<a class="btn btn-white shadow-warning text-warning" type="submit" href="{{ url_for('admin.recipe_dashboard') }}"> <i class="fa fa-user me-2"></i>Users</a>
+					<a class="btn btn-white shadow-warning text-warning" type="submit" href="{{ url_for('user.recipe_dashboard') }}"> <i class="fa fa-user me-2"></i>Users</a>
 					<a class="btn btn-white shadow-warning text-warning" type="submit" href="{{ url_for('app_routes.home') }}"> <i class="fa fa-home fa-fw me-2"></i>Home</a>
 					<a class="btn btn-white shadow-warning text-warning" type="submit" href="{{ url_for('app_routes.logout') }}"> <i class="fa fa-sign-out me-2"></i>Logout</a>
 				{% endif %}
@@ -110,7 +110,7 @@
 						    <tr>
 						    	<th>&nbsp;</th>
 						      <th>Username</th>
-							  <th>Email</th>
+							    <th>Email</th>
 						      <th>Status</th>
 						      <th>&nbsp;</th>
 						    </tr>
@@ -134,10 +134,9 @@
 						      <td>{{ user.email }}</td>
 						      <td class="status"><span class="active">Active</span></td>
 						      <td>
-								<form method="POST" action="{{ url_for('admin.delete', user_id=user.id) }}" class=close data-dismiss="alert" aria-label="Close">
-									<button class="btn btn-danger" type="submit" name="instructions_button" value="Delete">Delete</button>
-								</form>
-				          	</button>
+                    <form method="POST" action="{{ url_for('admin.delete', user_id=user.id) }}" class=close data-dismiss="alert" aria-label="Close">
+                      <button class="btn btn-danger" type="submit" name="instructions_button" value="Delete">Delete</button>
+                    </form>
 				        	</td>
 						    </tr>
 						  {% endfor %}

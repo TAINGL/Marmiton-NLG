@@ -54,12 +54,15 @@
             </div>
             <form class="d-flex mt-4 mt-lg-0 ms-lg-auto ms-xl-0">
                 {% if current_user.is_authenticated %}
-                {% if current_user.is_admin %}
+                {% if current_user.access == 2  %}
 					<a class="btn btn-white shadow-warning text-warning" type="submit" href="{{ url_for('admin.admin_dashboard') }}"><i class="fa fa-cog fa-fw me-2"></i>Monitor</a>
-					<a class="btn btn-white shadow-warning text-warning" type="submit" href="{{ url_for('admin.recipe_dashboard') }}"> <i class="fa fa-user me-2"></i>Users</a>
+					<a class="btn btn-white shadow-warning text-warning" type="submit" href="{{ url_for('user.recipe_dashboard') }}"> <i class="fa fa-user me-2"></i>Admin RecipeBook</a>
 					<a class="btn btn-white shadow-warning text-warning" type="submit" href="{{ url_for('app_routes.home') }}"> <i class="fa fa-home fa-fw me-2"></i>Home</a>
 					<a class="btn btn-white shadow-warning text-warning" type="submit" href="{{ url_for('app_routes.logout') }}"> <i class="fa fa-sign-out me-2"></i>Logout</a>
-			{% endif %}
+                {% else %}
+          <a class="btn btn-white shadow-warning text-warning" type="submit" href="{{ url_for('app_routes.home') }}"> <i class="fa fa-home fa-fw me-2"></i>Home</a>
+          <a class="btn btn-white shadow-warning text-warning" type="submit" href="{{ url_for('app_routes.logout') }}"> <i class="fa fa-sign-out me-2"></i>Logout</a>
+			          {% endif %}
                 {% endif %}
                 </form>
             </div>
@@ -110,109 +113,36 @@
 						    <tr>
 						    	<th>&nbsp;</th>
 						      <th>Titre</th>
-							  <th>Ingrédients</th>
+							    <th>Ingrédients</th>
 						      <th>Instruction</th>
-                              <th>Commentaire</th>
-                              <th>Note</th>
+                  <th>Commentaire</th>
+                  <th>Note (max=5)</th>
+                  <th>Actions</th>
 						      <th>&nbsp;</th>
 						    </tr>
 						  </thead>
+              {% for info in review_user%}
 						  <tbody>
 						    <tr class="alert" role="alert">
 						    	<td>
 						    		<label class="checkbox-wrap checkbox-primary">
-										  <input type="checkbox" checked>
+										  <input type="checkbox">
 										  <span class="checkmark"></span>
 										</label>
 						    	</td>
-						      <td>
-						      	Beignets de sardines<br>
-                                Sauce tartare
-						      </td>
-						      <td>Sardines, Paprika fumé, Citron vert, Huile, Panko, Oeuf</td>
-                              <td> 
-                                  Dans 3 assiettes, préparez la maïzena, les œufs battus en omelette, puis le panko parfumé au paprika fumé. Passez d’abord les sardines dans la maïzena, retirez délicatement l’excédent, puis déposez-les dans les œufs battus en omelette, et enfin dans la farine de panko au paprika fumé.<br>
-                            </td>
-						      <td class="status">Pour cette recette de Beignets de sardines, sauce tartare, vous pouvez compter 5 min de préparation. Pour en savoir plus sur les aliments de cette recette de beignets Salés.</td>
-						      <td> 4/5
-				        	</td>
+						      <td>{{ info["titles"] }}</td>
+						      <td>{{ info["ingredients"] }}</td>
+                  <td>{{ info["instructions"] }}</td>
+						      <td class="status">{{ info["review"] }}</td>
+						      <td>{{ info["rate"] }}</td>
+                  <td>
+                    <form method="POST" action="{{ url_for('user.delete', recipe_id=info._id) }}" class=close data-dismiss="alert" aria-label="Close">
+                      <button class="btn btn-danger mb-1" type="submit" name="delete_button" value="Delete">Delete</button>
+                    </form>
+                  </td>
 						    </tr>
-						    <tr class="alert" role="alert">
-						    	<td>
-						    		<label class="checkbox-wrap checkbox-primary">
-										  <input type="checkbox">
-										  <span class="checkmark"></span>
-										</label>
-						    	</td>
-                                <td>
-                                  Gaufres à la crème au citron, ciboulette
-                                </td>
-                                <td>Farine, Sel, Lait, Beurre, Levure, Oeuf, Sucre</td>
-                                <td> 
-                                    Séparez les jaunes d’œuf des blancs. Dans un saladier, mélangez la farine, la levure et le sel puis ajoutez le lait et les jaunes d’œuf au fur et à mesure jusqu’à obtention d’une pâte homogène, ajoutez ensuite la bière et le beurre fondu. Montez les blancs en neige et serrez-les avec le sucre vanillé. Incorporez-les délicatement au mélange à l’aide d’une maryse. Laissez reposer quelques minutes.
-                              </td>
-                                <td class="status">Pour cette recette de Beignets de sardines, sauce tartare, vous pouvez compter 5 min de préparation. Pour en savoir plus sur les aliments de cette recette de beignets Salés.</td>
-                                <td> 4/5
-                              </td>
-                              </tr>
-						    <tr class="alert" role="alert">
-						    	<td>
-						    		<label class="checkbox-wrap checkbox-primary">
-										  <input type="checkbox">
-										  <span class="checkmark"></span>
-										</label>
-						    	</td>
-                                <td>
-                                    Beignets de sardines<br>
-                                  Sauce tartare
-                                </td>
-                                <td>Sardines, Paprika fumé, Citron vert, Huile, Panko, Oeuf</td>
-                                <td> 
-                                    Dans 3 assiettes, préparez la maïzena, les œufs battus en omelette, puis le panko parfumé au paprika fumé. Passez d’abord les sardines dans la maïzena, retirez délicatement l’excédent, puis déposez-les dans les œufs battus en omelette, et enfin dans la farine de panko au paprika fumé.<br>
-                              </td>
-                                <td class="status">Pour cette recette de Beignets de sardines, sauce tartare, vous pouvez compter 5 min de préparation. Pour en savoir plus sur les aliments de cette recette de beignets Salés.</td>
-                                <td> 4/5
-                              </td>
-                              </tr>
-						    <tr class="alert" role="alert">
-						    	<td>
-						    		<label class="checkbox-wrap checkbox-primary">
-										  <input type="checkbox">
-										  <span class="checkmark"></span>
-										</label>
-						    	</td>
-                                <td>
-                                    Beignets de sardines<br>
-                                  Sauce tartare
-                                </td>
-                                <td>Sardines, Paprika fumé, Citron vert, Huile, Panko, Oeuf</td>
-                                <td> 
-                                    Dans 3 assiettes, préparez la maïzena, les œufs battus en omelette, puis le panko parfumé au paprika fumé. Passez d’abord les sardines dans la maïzena, retirez délicatement l’excédent, puis déposez-les dans les œufs battus en omelette, et enfin dans la farine de panko au paprika fumé.<br>
-                              </td>
-                                <td class="status">Pour cette recette de Beignets de sardines, sauce tartare, vous pouvez compter 5 min de préparation. Pour en savoir plus sur les aliments de cette recette de beignets Salés.</td>
-                                <td> 4/5
-                              </td>
-                              </tr>
-						    <tr class="alert" role="alert">
-						    	<td class="border-bottom-0">
-						    		<label class="checkbox-wrap checkbox-primary">
-										  <input type="checkbox">
-										  <span class="checkmark"></span>
-										</label>
-						    	</td>
-                                <td>
-                                    Beignets de sardines<br>
-                                  Sauce tartare
-                                </td>
-                                <td>Sardines, Paprika fumé, Citron vert, Huile, Panko, Oeuf</td>
-                                <td> 
-                                    Dans 3 assiettes, préparez la maïzena, les œufs battus en omelette, puis le panko parfumé au paprika fumé. Passez d’abord les sardines dans la maïzena, retirez délicatement l’excédent, puis déposez-les dans les œufs battus en omelette, et enfin dans la farine de panko au paprika fumé.<br>
-                              </td>
-                                <td class="status">Pour cette recette de Beignets de sardines, sauce tartare, vous pouvez compter 5 min de préparation. Pour en savoir plus sur les aliments de cette recette de beignets Salés.</td>
-                                <td> 4/5
-                              </td>
-                              </tr>
 						  </tbody>
+              {% endfor %}
 						</table>
 					</div>
 				</div>

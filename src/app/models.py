@@ -16,16 +16,6 @@ ACCESS = {
     'user': 1,
     'admin': 2
 }
-# class Recipe(db.Model):
-#     id = db.Column(db.Integer, primary_key=True)
-#     title = db.Column(db.String(60), unique=True)
-#     ingredients = db.Column(db.String(60))
-#     instruction = db.Column(db.String(300))
-#     with_generation = db.Column(db.Integer())
-#     commentaire = db.Column(db.String(500))
-#     rating = db.Column(db.Integer())
-#     user_id = db.Column(db.Integer, foreign_keys=True)
-#     registered_on = db.Column(db.DateTime, nullable=True)
 class UserModel(UserMixin, db.Model):
     """
     Class that represents a user of the application
@@ -48,11 +38,12 @@ class UserModel(UserMixin, db.Model):
     registered_on = db.Column(db.DateTime, nullable=True)
     access = db.Column(db.Integer, default=1)
 
-    def __init__(self, username, email, plaintext_password, access=ACCESS['user']):
+    def __init__(self, id, username, email, plaintext_password, access=ACCESS['user']):
         """
         Create a new User object using the email address and hashing the
         plaintext password using Bcrypt.
         """
+        self.id = id
         self.username = username
         self.email = email
         self.hashed_password = generate_password_hash(plaintext_password)

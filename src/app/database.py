@@ -1,4 +1,5 @@
 import pymongo
+from bson.objectid import ObjectId
 import random
 
 class mongoinit(object):
@@ -13,6 +14,10 @@ class mongoinit(object):
     @staticmethod
     def insert(collection, data):
         mongoinit.DATABASE[collection].insert(data)
+        
+    @staticmethod
+    def update_recipeNLG(collection, ref_id_doc, update_dic):
+        mongoinit.DATABASE[collection].update({"_id":ref_id_doc},{"$set":update_dic})
 
     @staticmethod
     def find_one(collection, query):
@@ -27,3 +32,19 @@ class mongoinit(object):
         # coll refers to your collection
         count = mongoinit.DATABASE[collection].count()
         return mongoinit.DATABASE[collection].find()[random.randrange(count)]
+
+    @staticmethod
+    def get_last_doc(collection, ref_id_doc):
+        report = mongoinit.DATABASE[collection].find_one(
+            {'id_user': ref_id_doc},
+            sort=[( '_id', pymongo.DESCENDING )])
+        return report
+
+    @staticmethod
+    def update_one(collection, old_value, new_value):
+        update_doc = mongoinit.DATABASE[collection].update_one(old_value, new_value)
+        return update_doc
+
+    def delete_one(collection, doc_id):
+        delete_doc = mongoinit.DATABASE[collection].delete_one( {"_id": ObjectId(doc_id)})
+        return delete_doc

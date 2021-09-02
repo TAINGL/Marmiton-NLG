@@ -68,6 +68,7 @@ def initialize_extensions(app):
         """Check if user is logged-in on every page load."""
         try:
             return UserModel.query.filter(UserModel.id == int(user_id)).first()
+            # return UserModel.query.get(user_id)
         except:
             return None    
 
@@ -101,9 +102,11 @@ def register_blueprints(app):
     # with the Flask application instance (app)
     from .views import app_routes
     from .admin import admin
+    from .user import user
 
     app.register_blueprint(app_routes)
     app.register_blueprint(admin)
+    app.register_blueprint(user)
 
 from .models import UserModel, ACCESS
 def create_admin(exist = False):
