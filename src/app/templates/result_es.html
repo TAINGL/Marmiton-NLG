@@ -70,23 +70,30 @@
             <div class="col-md-7 col-lg-6 py-8 text-md-start text-center">
               <div class="card w-xxl-75">
                 <div class="card-body">
+
+                {% for hit in res['hits']['hits'] %}
+
                   <nav>
                     <div class="nav nav-tabs" id="nav-tab" role="tablist">
                       <h1 class="nav-link mb-3" type="text" aria-controls="nav-profile" aria-selected="false"></i> Recette similaire tirée du site Marmiton </h1>
-                      <img src="{{ image_link }}" height="50%" width="50%"/>
+                      <img src="{{ hit['_source']['images'] }}" height="50%" width="50%"/>
                       <div class="row flex-center"></div>
-                      <h1 class="nav-link mb-3" type="text" aria-controls="nav-profile" aria-selected="false"><img src="../static/public/assets/img/icons/titre.png" width="40" height="40" ></i> {{ title }} </h1>
+                      <h1 class="nav-link mb-3" type="text" aria-controls="nav-profile" aria-selected="false"><img src="../static/public/assets/img/icons/titre.png" width="40" height="40" ></i> {{ hit['_source']['titles'] }} </h1>
                     </div>
                   </nav>
+                
                   <div class="tab-content mt-3" id="nav-tabContent">
                     <div class="tab-pane fade show active" id="nav-home" role="tabpanel" aria-labelledby="nav-home-tab">
                       <form class="row gx-2 gy-2 align-items-center" method="POST" action="/home">
                         <div class="col">
                           <div class="input-group-icon">
-                            <h5 class="mt-4 fw-bold mb-2"><img src="../static/public/assets/img/icons/ingredients.png" width="30" height="30" > {{ ingredients }} </h5>
-                            <p class="mb-md-0">{{ result_instruction }}</p>
+                            <h5 class="mt-4 fw-bold mb-2"><img src="../static/public/assets/img/icons/ingredients.png" width="30" height="30" > {{ hit['_source']['ingredients'] }} </h5>
+                            <p class="mb-md-0">{{ hit['_source']['instructions'] }}</p>
                           </div>
                         </div>
+
+                {% endfor %}
+
                         <div class="input-group-icon">
                             <a class="btn btn-danger mb-1" type="submit" href="{{ url_for('app_routes.home') }}"></i>Retourner à la page d'accueil</a>
                             <button class="btn btn-danger mb-1" type="submit"><img src="../static/public/assets/img/icons/envoyer-un-mail.png" width="20" height="20"></button>
@@ -95,6 +102,7 @@
                       </form>
                     </div>
                   </div>
+                
                 </div>
               </div>
             </div>

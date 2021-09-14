@@ -9,6 +9,7 @@ from flask_migrate import Migrate
 from flask_jwt_extended import JWTManager
 from flask_wtf.csrf import CSRFProtect
 from flask_mail import Mail
+from elasticsearch import Elasticsearch
 from werkzeug.security import generate_password_hash
 from app.database import mongoinit
 from settings import *
@@ -24,6 +25,7 @@ from settings import *
 # the global scope, but without any arguments passed in.  These instances are not attached
 # to the application at this point.
 db = SQLAlchemy()
+es = Elasticsearch()
 migrate = Migrate()
 jwt = JWTManager()
 mail = Mail()
@@ -39,6 +41,7 @@ login.login_view = "users.login"
 def create_app(config=None):
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_object(config)
+    app.elasticsearch = Elasticsearch(EsConfig.ELASTICSEARCH_URL)
     initialize_extensions(app)
     register_blueprints(app)
     dashboard.bind(app)

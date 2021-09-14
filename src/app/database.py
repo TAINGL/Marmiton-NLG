@@ -1,6 +1,9 @@
 import pymongo
-from bson.objectid import ObjectId
 import random
+import sys
+
+from elasticsearch import Elasticsearch
+from bson.objectid import ObjectId
 
 class mongoinit(object):
 
@@ -48,3 +51,96 @@ class mongoinit(object):
     def delete_one(collection, doc_id):
         delete_doc = mongoinit.DATABASE[collection].delete_one( {"_id": ObjectId(doc_id)})
         return delete_doc
+
+
+class esinit(object):
+    @staticmethod
+    def init():
+        es = Elasticsearch([{'host': 'localhost', 'port': 9200}], timeout=30) #, max_retries=10, retry_on_timeout=True
+        if es.ping():
+            print('Connected to ES')
+        else:
+            print('Could not connect to ES')
+            sys.exit()
+
+    @staticmethod
+    def es_search(index, doc_type, titles, should_k):
+        es = Elasticsearch([{'host': 'localhost', 'port': 9200}], timeout=30) #, max_retries=10, retry_on_timeout=True
+        
+        # body_all = {
+        #     "query": {
+        #         "bool" : {
+        #         "must" : {
+        #             "term" : { "titles" : titles }
+        #         },
+        #         "should" : [
+        #             #{ "term" : { "titles" : titles } },
+        #             { "term" : { "ingredients" : ingredients } },
+        #         ],
+        #         "minimum_should_match" : 1,
+        #         "boost" : 1.0
+        #         }
+        #     }
+        #     }
+
+        # body_all = {
+        #     "query": {
+        #     "bool": {
+        #             "must": {
+        #                 "match": { "titles": titles }
+        #     },
+        #     "filter" : should_k,
+        #        "minimum_should_match" : 1,
+        #        "boost" : 1.0
+        #         }
+        #     }
+        #     }
+
+        body_all ={
+            "query": {
+                "bool": {
+                "must": {
+                    "bool" : { 
+                    "should": should_k,
+                    # [
+                    #     { "match": { "title": "Elasticsearch" }},
+                    #     { "match": { "title": "Solr" }} 
+                    # ],
+                    "must": { "match": { "titles": titles }} 
+                    }
+                },
+                }
+            }
+            }
+
+        res = es.search(index=index, doc_type=doc_type, body=body_all,size=1)
+        return res
+
+    @staticmethod
+    def es_search_title(index, doc_type, keywords):
+        es = Elasticsearch([{'host': 'localhost', 'port': 9200}], timeout=30) #, max_retries=10, retry_on_timeout=True
+        body_title = {
+            "query": {
+                "multi_match": {
+                    "query": keywords,
+                    "fields": ["titles"]
+                }
+            }
+        }
+        res = es.search(index=index, doc_type=doc_type, body=body_title,size=1)
+        return res
+
+    @staticmethod
+    def es_search_ing(index, doc_type, keywords):
+        es = Elasticsearch([{'host': 'localhost', 'port': 9200}], timeout=30) #, max_retries=10, retry_on_timeout=True
+
+        body_ing = {
+            "query": {
+                "multi_match": {
+                    "query": keywords,
+                    "fields": ["ingredients"]
+                }
+            }
+        }
+        res = es.search(index=index, doc_type=doc_type, body=body_ing,size=1)
+        return res

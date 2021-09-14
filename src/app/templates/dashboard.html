@@ -55,8 +55,8 @@
             <form class="d-flex mt-4 mt-lg-0 ms-lg-auto ms-xl-0">
                 {% if current_user.is_authenticated %}
                 {% if current_user.access == 2  %}
-					<a class="btn btn-white shadow-warning text-warning" type="submit" href="{{ url_for('admin.admin_dashboard') }}"><i class="fa fa-cog fa-fw me-2"></i>Monitor</a>
-					<a class="btn btn-white shadow-warning text-warning" type="submit" href="{{ url_for('user.recipe_dashboard') }}"> <i class="fa fa-user me-2"></i>Admin RecipeBook</a>
+					<a class="btn btn-white shadow-warning text-warning" type="submit" href="{{ url_for('admin.dashboard') }}"><i class="fa fa-cog fa-fw me-2"></i>Monitor</a>
+					<a class="btn btn-white shadow-warning text-warning" type="submit" href="{{ url_for('admin.admin_dashboard') }}"> <i class="fa fa-user me-2"></i>Dashboard</a>
 					<a class="btn btn-white shadow-warning text-warning" type="submit" href="{{ url_for('app_routes.home') }}"> <i class="fa fa-home fa-fw me-2"></i>Home</a>
 					<a class="btn btn-white shadow-warning text-warning" type="submit" href="{{ url_for('app_routes.logout') }}"> <i class="fa fa-sign-out me-2"></i>Logout</a>
                 {% else %}

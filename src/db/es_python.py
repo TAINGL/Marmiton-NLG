@@ -1,121 +1,72 @@
-# TO DO
+# https://stackoverflow.com/questions/28675162/how-do-you-add-multiple-json-files-to-elasticsearch
+
 import json
-import logging
-from pprint import pprint
-from time import sleep
-
-import requests
+import sys
+import os
+import pandas as pd
 from elasticsearch import Elasticsearch
+from elasticsearch import helpers
+from elasticsearch.helpers import bulk
+
+# connect to ES on localhost on port 9200
+es = Elasticsearch([{'host': 'localhost', 'port': 9200}], timeout=30)
+if es.ping():
+    print('Connected to ES')
+else:
+    print('Could not connect to ES')
+    sys.exit()
+
+## create index of recipe
+df = pd.read_json (r"/Users/Johanna/Documents/SIMPLON DATA IA/TITRE PRO/PROJET CD/data/marmiton_to_mongo.json")
+data = df.T
+data["id"] = data.index + 1
+print(data.tail(10))
+print(data.shape)
+
+df_1 = data.iloc[:20750,:]
+df_2 = data.iloc[20752:,:]
+print("Shape of new dataframes - {} , {}".format(df_1.shape, df_2.shape)) # problem with row 20751
+
+frames = [df_1, df_2]
+df = pd.concat(frames)
+
+df_test_1 = data.iloc[:6238,:]
+df_test_2 = data.iloc[6239:12476,:]
+df_test_3 = data.iloc[12477:18714,:]
+df_test_4 = data.iloc[18714:,:]
+
+# data = df_test_1.to_json('/Users/Johanna/Documents/SIMPLON DATA IA/TITRE PRO/PROJET CD/data/test/df_test_1.json',orient='records')
+# data = df_test_2.to_json('/Users/Johanna/Documents/SIMPLON DATA IA/TITRE PRO/PROJET CD/data/test/df_test_2.json',orient='records')
+# data = df_test_3.to_json('/Users/Johanna/Documents/SIMPLON DATA IA/TITRE PRO/PROJET CD/data/test/df_test_3.json',orient='records')
+# data = df_test_4.to_json('/Users/Johanna/Documents/SIMPLON DATA IA/TITRE PRO/PROJET CD/data/test/df_test_4.json',orient='records')
+
+# print('ok')
+
+es_client = Elasticsearch(http_compress=True)
 
 
-def search(es_object, index_name, search):
-    res = es_object.search(index=index_name, body=search)
-    pprint(res)
+use_these_keys = ['id', 'titles', 'NER', 'instructions']
+def filterKeys(document):
+    return {key: document[key] for key in use_these_keys }
 
-
-def create_index(es_object, index_name):
-    created = False
-    # index settings
-    settings = {
-        "settings": {
-            "number_of_shards": 1,
-            "number_of_replicas": 0
-        },
-        "mappings": {
-            "recette": {
-                "dynamic": "strict",
-                "properties": {
-                    "titles": {
-                        "type": "text"}
-                    },
-                    "total times": {
-                        "type": "integer"
-                    },
-                    "yields": {
-                        "type": "text"
-                    },
-                    "ingredients": {
-                        "type": "nested",
-                        "properties": {
-                            "step": {"type": "text"}
-                            }
-                        },
-                    "instructions": {
-                        "type": "text"
-                    },
-                    "images": {
-                        "type": "text"
-                    },
-                    "host": {
-                        "type": "text"
-                    },
-                    "links": {
-                        "type": "text"
-                    },
-                    "ner": {
-                        "type": "nested",
-                        "properties": {
-                            "step": {"type": "text"}
-                    }
-                }
+def doc_generator(file):
+    f = open(file)
+    data = json.load(f)
+    for doc in data:
+        # print(doc['id'])
+        # print(doc)
+        yield {
+                "_index": 'recipe',
+                "_type": "_doc",
+                "_id" : doc['id'],
+                "_source": doc,
             }
-        }
-    }
 
-    try:
-        if not es_object.indices.exists(index_name):
-            # Ignore 400 means to ignore "Index Already Exist" error.
-            es_object.indices.create(index=index_name, ignore=400, body=settings)
-            print('Created Index')
-        created = True
-    except Exception as ex:
-        print(str(ex))
-    finally:
-        return created
+path = ['/Users/Johanna/Documents/SIMPLON DATA IA/TITRE PRO/PROJET CD/data/test/df_test_1.json',
+        '/Users/Johanna/Documents/SIMPLON DATA IA/TITRE PRO/PROJET CD/data/test/df_test_2.json',
+        '/Users/Johanna/Documents/SIMPLON DATA IA/TITRE PRO/PROJET CD/data/test/df_test_3.json',
+        '/Users/Johanna/Documents/SIMPLON DATA IA/TITRE PRO/PROJET CD/data/test/df_test_4.json']
 
-
-def store_record(elastic_object, index_name, record):
-    is_stored = True
-    try:
-        outcome = elastic_object.index(index=index_name, doc_type='salads', body=record)
-        print(outcome)
-    except Exception as ex:
-        print('Error in indexing data')
-        print(str(ex))
-        is_stored = False
-    finally:
-        return is_stored
-
-
-def connect_elasticsearch():
-    _es = None
-    _es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
-    if _es.ping():
-        print('Yay Connected')
-    else:
-        print('Awww it could not connect!')
-    return _es
-
-
-if __name__ == '__main__':
-    logging.basicConfig(level=logging.ERROR)
-
-  
-    # Opening JSON file
-    with open('/Users/Johanna/Documents/SIMPLON DATA IA/TITRE PRO/PROJET CD/data/marmiton_ner.json') as json_file:
-        result = json.load(json_file)
-
-    es = connect_elasticsearch()
-    if es is not None:
-        if create_index(es, 'recipes'):
-            out = store_record(es, 'recipes', result)
-            print('Data indexed successfully')
-
-    es = connect_elasticsearch()
-    if es is not None:
-        # search_object = {'query': {'match': {'calories': '102'}}}
-        # search_object = {'_source': ['title'], 'query': {'match': {'calories': '102'}}}
-        search_object = {'_source': ['title'], 'query': {'range': {'total times': {'gte': 20}}}}
-        search(es, 'recipes', json.dumps(search_object))
-
-
+# helpers.bulk(es_client, doc_generator('/Users/Johanna/Documents/SIMPLON DATA IA/TITRE PRO/PROJET CD/data/test/df_test_4.json'))
+res = es.count(index="recipe", doc_type="_doc")["count"]
+print(res)

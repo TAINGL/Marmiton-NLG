@@ -75,26 +75,9 @@ def recipe_dashboard():
     review_user = mongoinit.find_similar(collection, query)
     return render_template('dashboard.html', review_user=review_user)
 
-# @user.route('/update/<recipe_id>', methods=['POST'])
-# def update(recipe_id):
-#     recipe = UserModel.query.get_or_404(recipe_id)
-#     if recipe:
-#         collection = 'recipeNLG'
-#         old_value = { "address": "Valley 345" }
-#         new_value = { "$set": { "address": "Canyon 123" } }
-#         mongoinit.update(collection, old_value, new_value)
-#         flash('Recipe Id updated.')
-#         return redirect(url_for('user.recipe_dashboard'))
-#     return redirect(url_for('user.recipe_dashboard'))
 
 @user.route('/delete/<recipe_id>', methods=['POST'])
 def delete(recipe_id):
     collection = 'recipeNLG'
     mongoinit.delete_one(collection, recipe_id)
-    # review_user = UserModel.delete_one({ "_id": "Mountain 21" }recipe_id)
-    # if review_user:
-    #     db.session.delete(review_user)
-    #     db.session.commit()
-    #     flash('Recipe Id deleted.')
-    #     return redirect(url_for('user.recipe_dashboard'))
     return redirect(url_for('user.recipe_dashboard'))

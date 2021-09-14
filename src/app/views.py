@@ -6,7 +6,7 @@ from app import db, mail, create_admin
 from .emails import send_email
 from .forms import RegisterForm, LoginForm, ResetPasswordForm, NewPasswordForm
 from .models import UserModel
-from .database import mongoinit
+from .database import mongoinit, esinit
 from .gpt2 import *
 
 import json
@@ -76,31 +76,65 @@ def home():
         elif request.form.get("recipe_button"): 
             title = request.form['title'] # preprocessing sur les inputs
             ingredients = request.form['ingredients'] # preprocessing sur les inputs
-            collection = 'recipe'
-            print("title ", title)
-            print("ingredients ", ingredients)
-            print(type(ingredients))
-            
-            # Converting str to list
-            keywords = ingredients.split(', ')
-            #print(ingredients)
-            #print(keywords)
+            index = 'recipe'
+            doc_type = "_doc"
 
             if title != "" and ingredients != "":
-                result = mongoinit.find_one(collection,
-                    {
-                        "$and": [
-                                {"titles":{ "$regex" : title}},
-                                {"NER":{ "$all" : keywords}} # $in
-                            ]
-                    }
-                    )
+                keywords = ingredients.split(', ')
+                _ing = ' AND '.join([str(elem) for elem in keywords])
+                # title_split = title.split(' ')
+                # _title = ' AND '.join([str(elem) for elem in title_split])
+                # k_search = '('+ _ing + ')'+ ' OR ' + '('+ title + ')'
+                # print(k_search)
+
+                # body_dict = {"query": {"multi_match": {"query": _ing,"fields": ["ingredients"]}}}
+                # print(body_dict)
+
+                should_k =[]
+                for kw in keywords:  
+                    body_dict = { "match" : { "NER" : kw } }
+                    # body_dict = {"query": {"multi_match": {"query": kw,"fields": ["ingredients"]}}}
+                    should_k.append(body_dict)
+                print(should_k)
+
+                res = esinit.es_search(index=index, doc_type=doc_type, titles=title, should_k=body_dict)
+                return render_template('result_es.html', res=res )
+                
+
             elif title != "" and ingredients == "":
-                result = mongoinit.find_one(collection, {"titles" : { "$regex" : title }})
+                res = esinit.es_search_title(index=index, doc_type=doc_type, keywords=title)
+                return render_template('result_es.html', res=res )
+
             elif ingredients != "" and title == "":
-                result = mongoinit.find_one(collection, {"NER" : { "$all" : keywords }})
+                keyword = ingredients.split(', ')
+                keywords = ' AND '.join([str(elem) for elem in keyword])
+                res = esinit.es_search_ing(index=index, doc_type=doc_type, keywords=keywords)
+                return render_template('result_es.html', res=res ) 
+                # https://sysadmins.co.za/building-a-search-engine-for-our-scraped-data-on-elasticsearch-part-2/
+                # https://stackoverflow.com/questions/57800448/need-to-know-how-to-search-multiple-keyword-in-a-same-field-in-elasticsearch
+
+
+            # print("title ", title)
+            # print("ingredients ", ingredients)
+            # print(type(ingredients))
+            
+
+            # if title != "" and ingredients != "":
+            #     result = mongoinit.find_one(collection,
+            #         {
+            #             "$and": [
+            #                     {"titles":{ "$regex" : title}},
+            #                     {"NER":{ "$all" : keywords}} # $in
+            #                 ]
+            #         }
+            #         )
+            # elif title != "" and ingredients == "":
+            #     result = mongoinit.find_one(collection, {"titles" : { "$regex" : title }})
+            # elif ingredients != "" and title == "":
+            #     result = mongoinit.find_one(collection, {"NER" : { "$all" : keywords }})
 
             else:
+                collection = 'recipe'
                 result = mongoinit.get_random_doc(collection)
                 
 
@@ -238,14 +272,3 @@ def logout():
     flash('Goodbye!')
     logger.info('You are log out')
     return redirect(url_for('app_routes.login'))
-
-#@app_routes.route('/add_comments', methods=['GET', 'POST'])
-#def add_comments():
-#    if request.form.get("instructions_button"):
-#        pass
-#    elif request.form.get("instructions_button"):
-#        pass
-#    else:
-#        pass
-#    return render_template('result.html', title = title, ingredients = ingredients, result_instruction = result_instruction), 200
-
